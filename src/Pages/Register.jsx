@@ -1,36 +1,40 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import Logo from "./../assets/Images/Logo.png";
+import { useAuth } from "../Contexts/authContext";
+import { doCreateUserWithEmailAndPassword } from "../firebase/auth";
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPassword, setconfirmPassword] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleRegister = (e) => {
+  const { userLoggedIn } = useAuth();
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // Check if passwords match
-    if (password !== confirmPassword) {
-      alert("Passwords don't match");
-      return;
+    if (!isRegistering) {
+      setIsRegistering(true);
+      await doCreateUserWithEmailAndPassword(email, password);
     }
-    // Save registration data in localStorage
-    localStorage.setItem("registeredUser", JSON.stringify({ email, password }));
-    alert("Registration successful! Please login.");
-    // Redirect or navigate to login page
-    // Example: history.push('/login');
   };
 
   return (
     <>
+      {userLoggedIn && <Navigate to={"/"} replace={true} />}
+
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-semibold text-center text-gray-700">
             Register
           </h1>
 
-          <form className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
               <label
                 htmlFor="email"
@@ -41,6 +45,12 @@ export default function Register() {
               <input
                 type="email"
                 id="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
               />
             </div>
@@ -53,8 +63,14 @@ export default function Register() {
                 Password
               </label>
               <input
+                disabled={isRegistering}
                 type="password"
-                id="password"
+                autoComplete="new-password"
+                required
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
               />
             </div>
@@ -67,14 +83,21 @@ export default function Register() {
                 Confirm Password
               </label>
               <input
+                disabled={isRegistering}
                 type="password"
-                id="confirm-password"
+                autoComplete="off"
+                required
+                value={confirmPassword}
+                onChange={(e) => {
+                  setconfirmPassword(e.target.value);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
               />
             </div>
 
             <button
               type="submit"
+              disabled={isRegistering}
               className="w-full py-2 text-white bg-cyan-400 rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-colors duration-200"
             >
               Register

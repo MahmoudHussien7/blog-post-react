@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
 import Posts from "../Components/Posts";
 import Login from "../Pages/Login";
+
 export default function Home() {
   const [posts, setPosts] = useState([]);
 

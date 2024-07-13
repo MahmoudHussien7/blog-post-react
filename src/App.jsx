@@ -8,6 +8,8 @@ import {
 } from "react-router-dom";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
+import { AuthProvider } from "./Contexts/authContext";
+
 import FlipTransition from "./Components/FlipTransition";
 import Home from "./Pages/Home";
 import Navbar from "./Components/Navbar";
@@ -29,7 +31,9 @@ function App() {
 export default function AppWrapper() {
   return (
     <Router>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </Router>
   );
 }
