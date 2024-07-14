@@ -1,46 +1,28 @@
 {
   "Posts": [
     {
-      "id": 1,
-      "image": "https://images.pexels.com/photos/26572408/pexels-photo-26572408/free-photo-of-silhouette-of-man-by-the-sea-during-sunset.jpeg",
-      "title": "Omar",
-      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy."
+      "id": "9850",
+      "image": "https://camo.githubusercontent.com/203d7e9bdda7e3b850b3b144872ca275f583a34534f7b7b036d3f4811f455f29/68747470733a2f2f6a736f6e706c616365686f6c6465722e74797069636f64652e636f6d2f6d6f636b656e642e737667",
+      "title": "Mahmoud",
+      "content": "asdasdad",
+      "date": "2024-07-14T15:16:43.512Z"
     },
     {
-      "id": 2,
-      "image": "https://images.pexels.com/photos/1714362/pexels-photo-1714362/free-photo-of-photo-of-plants.jpeg",
-      "title": "Belal",
-      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy."
+      "id": "7702"
     },
     {
-      "id": 3,
-      "image": "https://images.pexels.com/photos/45170/kittens-cat-cat-puppy-rush-45170.jpeg",
-      "title": "Sara",
-      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy."
+      "id": "1880",
+      "image": "https://camo.githubusercontent.com/203d7e9bdda7e3b850b3b144872ca275f583a34534f7b7b036d3f4811f455f29/68747470733a2f2f6a736f6e706c616365686f6c6465722e74797069636f64652e636f6d2f6d6f636b656e642e737667",
+      "title": "ahmad",
+      "content": "asdadsad",
+      "date": "2024-07-14T15:22:54.047Z"
     },
     {
-      "id": 4,
-      "image": "https://images.pexels.com/photos/1542069/pexels-photo-1542069/free-photo-of-person-wearing-white-top.jpeg",
-      "title": "Ahmed",
-      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy."
-    },
-    {
-      "id": 5,
-      "image": "https://images.pexels.com/photos/1054014/pexels-photo-1054014/free-photo-of-person-wearing-black-jacket-and-knit-cap-near-green-trees.jpeg",
-      "title": "Amina",
-      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy."
-    },
-    {
-      "id": 6,
-      "image": "https://images.pexels.com/photos/2462010/pexels-photo-2462010/free-photo-of-woman-wearing-yellow-knit-top-standing-on-pier.jpeg",
-      "title": "Youssef",
-      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy."
-    },
-    {
-      "id": 7,
-      "image": "https://images.pexels.com/photos/1058995/pexels-photo-1058995/free-photo-of-man-wearing-grey-shawl-neck-sweater.jpeg",
-      "title": "Mona",
-      "content": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy."
+      "id": "8215",
+      "image": "https://camo.githubusercontent.com/203d7e9bdda7e3b850b3b144872ca275f583a34534f7b7b036d3f4811f455f29/68747470733a2f2f6a736f6e706c616365686f6c6465722e74797069636f64652e636f6d2f6d6f636b656e642e737667",
+      "title": "tezy",
+      "content": "asdadas",
+      "date": "2024-07-14T15:24:27.667Z"
     }
   ]
 }

@@ -13,6 +13,7 @@ import { AuthProvider } from "./Contexts/authContext";
 import FlipTransition from "./Components/FlipTransition";
 import Home from "./Pages/Home";
 import Navbar from "./Components/Navbar";
+import AddPost from "./Components/AddPost";
 
 function App() {
   const location = useLocation();
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/AddPost" element={<AddPost />} />
       </Routes>
     </FlipTransition>
   );
