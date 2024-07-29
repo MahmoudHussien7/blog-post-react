@@ -111,8 +111,8 @@ const Posts = () => {
           ? {
               ...post,
               likes: isLiked
-                ? post.likes.filter((uid) => uid !== currentUser.uid)
-                : [...post.likes, currentUser.uid],
+                ? post.likes?.filter((uid) => uid !== currentUser.uid)
+                : [...post.likes, currentUser?.uid],
             }
           : post
       )
@@ -192,7 +192,7 @@ const Posts = () => {
     }
   };
   console.log(currentUser);
-  
+
   return (
     <div className="container mx-auto p-4 bg-gray-100 min-h-screen">
       {posts.map((post) => {
@@ -221,7 +221,7 @@ const Posts = () => {
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 flex items-center justify-center bg-gray-300 rounded-full overflow-hidden">
                     <img
-                      src={post.userImage}
+                      src={post?.userImage}
                       alt="ProfileImage"
                       className="w-full h-full object-cover"
                     />
@@ -277,7 +277,7 @@ const Posts = () => {
                       <FaRegHeart className="inline" />
                     )}
                   </button>
-                  {post.likes.length}
+                  {post.likes?.length}
                 </div>
                 <p className="text-gray-800 text-base">{post.content}</p>
                 <div className="border-t border-gray-300 mt-4 pt-4 max-h-40 overflow-y-auto">
@@ -285,17 +285,17 @@ const Posts = () => {
                     <div key={index} className="flex items-start mb-4">
                       <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden">
                         <img
-                          src={comment.userImage}
+                          src={comment?.userImage}
                           alt="CommenterImage"
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="ml-3">
                         <div className="text-sm font-semibold text-gray-900">
-                          {comment.displayName}
+                          {comment?.displayName}
                         </div>
                         <div className="text-sm text-gray-700">
-                          {comment.text}
+                          {comment?.text}
                         </div>
                       </div>
                     </div>
