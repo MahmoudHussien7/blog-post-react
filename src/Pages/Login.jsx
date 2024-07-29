@@ -5,7 +5,7 @@ import Logo from "./../assets/Images/Logo.png";
 import {
   doSignInWithEmailAndPassword,
   doSignInWithGoogle,
-} from "../firebase/auth";
+} from "../../config/firebase/auth";
 import { useAuth } from "../Contexts/authContext";
 
 export default function Login() {
@@ -49,7 +49,7 @@ export default function Login() {
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
           <h1 className="text-2xl font-semibold text-center text-gray-700">
-            Login
+            Welcome Back! <br></br>
           </h1>
 
           {errorMessage && (

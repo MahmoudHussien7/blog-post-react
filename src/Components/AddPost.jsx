@@ -1,61 +1,74 @@
+// AddPost.jsx
 import React, { useState } from "react";
+import { db, storage } from "../config/firebase.config";
+import { collection, addDoc } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { useAuth } from "../Contexts/authContext";
+import { Link } from "react-router-dom";
 
 const AddPost = ({ onNewPost }) => {
-  const { userLoggedIn } = useAuth();
-
+  const { userLoggedIn, currentUser } = useAuth();
   const [postText, setPostText] = useState("");
-  const [title, setTitle] = useState("");
-  const [image, setImage] = useState(""); // Assuming you want to allow adding an image
+  const [image, setImage] = useState(null);
+  const [isAddingPost, setIsAddingPost] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleTextChange = (e) => {
-    setPostText(e.target.value);
-  };
+  const displayName = currentUser?.displayName || "Anonymous";
 
-  const handleTitleChange = (e) => {
-    setTitle(e.target.value);
-  };
+  const handleTextChange = (e) => setPostText(e.target.value);
+  const handleImageChange = (e) => setImage(e.target.files[0]);
 
-  const handleImageChange = (e) => {
-    setImage(e.target.value);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isAddingPost) return;
 
-    // Generate a new ID (you might want to handle IDs more robustly in a real app)
-    const newId = Math.floor(Math.random() * 10000).toString();
-
-    // Create a new post object
-    const newPost = {
-      id: newId,
-      image: image || "", // Use provided image or empty string
-      title: title,
+    setIsAddingPost(true);
+    const postData = {
+      title: displayName,
       content: postText,
-      date: new Date().toISOString(), // Assuming you want to add a timestamp
+      date: new Date().toISOString(),
+      userId: currentUser.uid,
+      userImage: currentUser.photoURL,
     };
 
-    // Mock API call to add the new post
-    // In a real app, replace this with your actual fetch call
-    // Make sure your server/API can handle this format
-    fetch("http://localhost:3000/Posts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newPost),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        onNewPost(newPost); // Notify parent component of new post
-        setPostText(""); // Clear input after successful post
-        setTitle(""); // Clear title input
-        setImage(""); // Clear image input
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    try {
+      let imageUrl = "";
+      if (image) {
+        const imageRef = ref(storage, `postImages/${Date.now()}_${image.name}`);
+        const uploadTask = uploadBytesResumable(imageRef, image);
+
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            null,
+            (error) => {
+              console.error("Image upload error:", error);
+              setErrorMessage("Failed to upload image.");
+              reject(error);
+            },
+            () => {
+              getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+                imageUrl = url;
+                resolve();
+              });
+            }
+          );
+        });
+      }
+
+      const newPost = { ...postData, image: imageUrl };
+      await addDoc(collection(db, "Posts"), newPost);
+
+      onNewPost({ ...newPost });
+      setPostText("");
+      setImage(null);
+      setErrorMessage("");
+    } catch (error) {
+      console.error("Error adding new post:", error);
+      setErrorMessage("Failed to add post.");
+    } finally {
+      setIsAddingPost(false);
+    }
   };
 
   return (
@@ -64,23 +77,6 @@ const AddPost = ({ onNewPost }) => {
         <div className="max-w-md mx-auto bg-white p-5 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold mb-4">Add New Post</h2>
           <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Title
-              </label>
-              <input
-                id="title"
-                type="text"
-                value={title}
-                onChange={handleTitleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                placeholder="Enter title"
-                required
-              />
-            </div>
             <div className="mb-4">
               <label
                 htmlFor="postText"
@@ -103,26 +99,35 @@ const AddPost = ({ onNewPost }) => {
                 htmlFor="image"
                 className="block text-sm font-medium text-gray-700"
               >
-                Image URL
+                Image
               </label>
               <input
                 id="image"
-                type="text"
-                value={image}
+                type="file"
                 onChange={handleImageChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                placeholder="Optional: Enter image URL"
               />
             </div>
             <button
               type="submit"
+              disabled={isAddingPost}
               className="w-full py-2 px-4 bg-cyan-400 text-white font-semibold rounded-md shadow-md hover:bg-cyan-600 transition duration-200"
             >
-              Post
+              {isAddingPost ? "Adding..." : "Post"}
             </button>
           </form>
+          {errorMessage && (
+            <div className="text-red-500 mt-4">{errorMessage}</div>
+          )}
         </div>
-      ) : null}
+      ) : (
+        <div className="flex items-center justify-center flex-col">
+          <h1>You're Not Logged in..</h1>
+          <Link to="/Login" className="text-cyan-600 focus:ring-cyan-500">
+            Login Now!
+          </Link>
+        </div>
+      )}
     </>
   );
 };
