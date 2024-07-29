@@ -34,13 +34,12 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
-      <Navbar className="" />
-
+      <Navbar />
       {userLoggedIn ? (
         <div className="flex flex-grow">
           <Sidebar />
-          <div className="flex-grow p-6 lg:p-8 bg-white shadow-md rounded-lg m-4">
-            {loading ? <Skeleton /> : <Posts post={posts} />}
+          <div className="flex-grow p-6 lg:p-8 bg-white shadow-md rounded-lg m-4 lg:ml-16 mr-10">
+            {loading ? <Skeleton /> : <Posts posts={posts} />}
             <button
               onClick={toggleAddPost}
               className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-500 to-teal-500 text-white rounded-full w-14 h-14 flex justify-center items-center cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-300"

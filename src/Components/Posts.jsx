@@ -17,8 +17,8 @@ import EditPostForm from "../Components/EditPost";
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
-  const [editingPost, setEditingPost] = useState(null);
-  const [showDropdown, setShowDropdown] = useState(null);
+  const [editingPost, setEditingPost] = useState();
+  const [showDropdown, setShowDropdown] = useState([]);
   const [commentInputs, setCommentInputs] = useState({});
   const { currentUser } = useAuth();
 
@@ -98,21 +98,21 @@ const Posts = () => {
     const postRef = doc(db, "Posts", postId);
     if (isLiked) {
       await updateDoc(postRef, {
-        likes: arrayRemove(currentUser.uid),
+        likes: arrayRemove(currentUser?.uid),
       });
     } else {
       await updateDoc(postRef, {
-        likes: arrayUnion(currentUser.uid),
+        likes: arrayUnion(currentUser?.uid),
       });
     }
     setPosts((prevPosts) =>
-      prevPosts.map((post) =>
+      prevPosts?.map((post) =>
         post.id === postId
           ? {
               ...post,
               likes: isLiked
                 ? post.likes?.filter((uid) => uid !== currentUser.uid)
-                : [...post.likes, currentUser?.uid],
+                : [...post?.likes, currentUser?.uid],
             }
           : post
       )
@@ -124,8 +124,8 @@ const Posts = () => {
 
     const comment = {
       text: commentText,
-      userId: currentUser.uid,
-      displayName: currentUser.displayName,
+      userId: currentUser?.uid,
+      displayName: currentUser?.displayName,
       date: new Date().toISOString(),
     };
 
@@ -191,7 +191,6 @@ const Posts = () => {
       console.error("Error deleting post:", error);
     }
   };
-  console.log(currentUser);
 
   return (
     <div className="container mx-auto p-4 bg-gray-100 min-h-screen">
@@ -201,11 +200,11 @@ const Posts = () => {
         return (
           <div
             key={post.id}
-            className="bg-white max-h-100 shadow-lg rounded-lg p-4 mb-6 hover:shadow-xl transition-shadow relative border border-gray-200"
+            className="bg-white shadow-lg rounded-lg p-4 mb-6 hover:shadow-xl transition-shadow relative border border-gray-200"
           >
-            <div className="flex flex-col sm:flex-row max-h-96">
+            <div className="flex flex-col sm:flex-row">
               {post.image && (
-                <div className="flex-none w-full sm:w-1/2 max-h-96 overflow-hidden rounded-lg">
+                <div className="flex-none w-full sm:w-1/2 overflow-hidden rounded-lg">
                   <img
                     className="w-full h-auto object-cover rounded-lg"
                     src={post.image}
