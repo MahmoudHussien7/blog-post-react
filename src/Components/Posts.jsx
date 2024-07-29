@@ -17,8 +17,8 @@ import EditPostForm from "../Components/EditPost";
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
-  const [editingPost, setEditingPost] = useState();
-  const [showDropdown, setShowDropdown] = useState([]);
+  const [editingPost, setEditingPost] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(null);
   const [commentInputs, setCommentInputs] = useState({});
   const { currentUser } = useAuth();
 
@@ -39,12 +39,11 @@ const Posts = () => {
               storage,
               `profileImages/${postData.userId}`
             );
-            let userImageUrl;
+            let userImageUrl = "/path/to/placeholder-image.jpg"; // Default image
             try {
               userImageUrl = await getDownloadURL(userImageRef);
             } catch (error) {
               console.error("Error fetching user image:", error);
-              userImageUrl = "/path/to/placeholder-image.jpg";
             }
 
             const commentsWithUserImages = await Promise.all(
@@ -57,14 +56,13 @@ const Posts = () => {
                   storage,
                   `profileImages/${comment.userId}`
                 );
-                let commentUserImageUrl;
+                let commentUserImageUrl = "/path/to/placeholder-image.jpg"; // Default image
                 try {
                   commentUserImageUrl = await getDownloadURL(
                     commentUserImageRef
                   );
                 } catch (error) {
                   console.error("Error fetching comment user image:", error);
-                  commentUserImageUrl = "/path/to/placeholder-image.jpg";
                 }
 
                 return {
@@ -96,27 +94,31 @@ const Posts = () => {
 
   const handleLike = async (postId, isLiked) => {
     const postRef = doc(db, "Posts", postId);
-    if (isLiked) {
-      await updateDoc(postRef, {
-        likes: arrayRemove(currentUser?.uid),
-      });
-    } else {
-      await updateDoc(postRef, {
-        likes: arrayUnion(currentUser?.uid),
-      });
+    try {
+      if (isLiked) {
+        await updateDoc(postRef, {
+          likes: arrayRemove(currentUser?.uid),
+        });
+      } else {
+        await updateDoc(postRef, {
+          likes: arrayUnion(currentUser?.uid),
+        });
+      }
+      setPosts((prevPosts) =>
+        prevPosts?.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                likes: isLiked
+                  ? post.likes?.filter((uid) => uid !== currentUser.uid)
+                  : [...post?.likes, currentUser?.uid],
+              }
+            : post
+        )
+      );
+    } catch (error) {
+      console.error("Error handling like:", error);
     }
-    setPosts((prevPosts) =>
-      prevPosts?.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              likes: isLiked
-                ? post.likes?.filter((uid) => uid !== currentUser.uid)
-                : [...post?.likes, currentUser?.uid],
-            }
-          : post
-      )
-    );
   };
 
   const handleAddComment = async (postId, commentText) => {
@@ -129,20 +131,23 @@ const Posts = () => {
       date: new Date().toISOString(),
     };
 
-    const updatedPosts = posts.map((post) => {
-      if (post.id === postId) {
-        return { ...post, comments: [...(post.comments || []), comment] };
-      }
-      return post;
-    });
-    setPosts(updatedPosts);
+    try {
+      const postRef = doc(db, "Posts", postId);
+      await updateDoc(postRef, {
+        comments: arrayUnion(comment),
+      });
 
-    const postRef = doc(db, "Posts", postId);
-    await updateDoc(postRef, {
-      comments: arrayUnion(comment),
-    });
-
-    setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+      const updatedPosts = posts.map((post) => {
+        if (post.id === postId) {
+          return { ...post, comments: [...(post.comments || []), comment] };
+        }
+        return post;
+      });
+      setPosts(updatedPosts);
+      setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
   };
 
   const handleInputChange = (postId, value) => {
@@ -241,7 +246,11 @@ const Posts = () => {
                   {post.userId === currentUser.uid && (
                     <div className="absolute top-4 right-4">
                       <button
-                        onClick={() => setShowDropdown(post.id)}
+                        onClick={() =>
+                          setShowDropdown(
+                            showDropdown === post.id ? null : post.id
+                          )
+                        }
                         className="text-gray-600 hover:text-gray-900"
                       >
                         <FaEllipsisH className="text-xl" />
@@ -265,70 +274,74 @@ const Posts = () => {
                     </div>
                   )}
                 </div>
-                <div className="mb-4">
+                <p className="mb-4 text-gray-800">{post.content}</p>
+                {post.comments && post.comments.length > 0 && (
+                  <div className="mb-4">
+                    {post.comments.map((comment, index) => (
+                      <div key={index} className="flex items-start gap-3 mb-2">
+                        <div className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-full overflow-hidden">
+                          <img
+                            src={comment.userImage}
+                            alt="CommentUserImage"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold">{comment.displayName}</p>
+                          <p className="text-gray-700">{comment.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => handleLike(post.id, isLiked)}
-                    className="text-red-500 hover:text-red-700 mr-2 focus:outline-none"
+                    className={`flex items-center gap-2 ${
+                      isLiked ? "text-red-600" : "text-gray-600"
+                    } hover:text-red-600 transition-colors`}
                   >
-                    {isLiked ? (
-                      <FaHeart className="inline" />
-                    ) : (
-                      <FaRegHeart className="inline" />
-                    )}
+                    {isLiked ? <FaHeart /> : <FaRegHeart />}
+                    <span>{post.likes?.length || 0}</span>
                   </button>
-                  {post.likes?.length}
-                </div>
-                <p className="text-gray-800 text-base">{post.content}</p>
-                <div className="border-t border-gray-300 mt-4 pt-4 max-h-40 overflow-y-auto">
-                  {post.comments?.map((comment, index) => (
-                    <div key={index} className="flex items-start mb-4">
-                      <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden">
-                        <img
-                          src={comment?.userImage}
-                          alt="CommenterImage"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-semibold text-gray-900">
-                          {comment?.displayName}
-                        </div>
-                        <div className="text-sm text-gray-700">
-                          {comment?.text}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center mt-4">
                   <input
                     type="text"
                     placeholder="Add a comment..."
                     value={commentInputs[post.id] || ""}
                     onChange={(e) => handleInputChange(post.id, e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-lg p-2 mr-2"
+                    className="flex-1 border border-gray-300 rounded-lg p-2"
                   />
                   <button
                     onClick={() =>
-                      handleAddComment(post.id, commentInputs[post.id] || "")
+                      handleAddComment(post.id, commentInputs[post.id])
                     }
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
                   >
                     Comment
                   </button>
                 </div>
               </div>
             </div>
+            {editingPost && editingPost.id === post.id && (
+              <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 flex justify-center items-center z-50">
+                <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full relative">
+                  <button
+                    onClick={handleCloseModal}
+                    className="absolute top-4 right-4 text-2xl text-gray-600 hover:text-gray-900"
+                  >
+                    &times;
+                  </button>
+                  <EditPostForm
+                    post={editingPost}
+                    onSave={handleSaveEdit}
+                    onClose={handleCloseModal}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         );
       })}
-      {editingPost && (
-        <EditPostForm
-          post={editingPost}
-          onSave={handleSaveEdit}
-          onCancel={handleCloseModal}
-        />
-      )}
     </div>
   );
 };

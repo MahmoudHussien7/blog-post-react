@@ -36,9 +36,15 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <Navbar />
       {userLoggedIn ? (
-        <div className="flex flex-grow">
-          <Sidebar />
-          <div className="flex-grow p-6 lg:p-8 bg-white shadow-md rounded-lg m-4 lg:ml-16 mr-10">
+        <div className="flex flex-col lg:flex-row flex-grow">
+          <div className="hidden lg:block lg:w-1/4 bg-gray-200">
+            <Sidebar /> {/* Hide on mobile, show on large screens */}
+          </div>
+          <div
+            className={`flex-grow p-6 lg:p-8 bg-white shadow-md rounded-lg m-4 lg:ml-16 mr-10 ${
+              userLoggedIn ? "lg:ml-0" : ""
+            }`}
+          >
             {loading ? <Skeleton /> : <Posts posts={posts} />}
             <button
               onClick={toggleAddPost}

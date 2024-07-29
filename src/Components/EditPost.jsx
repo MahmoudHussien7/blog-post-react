@@ -1,14 +1,70 @@
+// import React, { useState } from "react";
+
+// const EditPost = ({ post, onSave, onClose }) => {
+//   const [content, setContent] = useState(post.content || "");
+//   const [img, setImg] = useState(null);
+//   const [preview, setPreview] = useState(post.image || "");
+
+//   const handleImageChange = (e) => {
+//     const file = e.target.files[0];
+//     if (file) {
+//       setImg(file);
+//       const reader = new FileReader();
+//       reader.onloadend = () => {
+//         setPreview(reader.result);
+//       };
+//       reader.readAsDataURL(file);
+//     }
+//   };
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+//     onSave({ ...post, content, img });
+//   };
+
+//   return (
+//     <div className="p-4">
+//       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+//         <textarea
+//           value={content}
+//           onChange={(e) => setContent(e.target.value)}
+//           className="border border-gray-300 p-2 rounded-lg"
+//           rows="4"
+//           placeholder="Edit post content..."
+//         />
+//         {preview && (
+//           <img
+//             src={preview}
+//             alt="Preview"
+//             className="w-full h-auto object-cover rounded-lg"
+//           />
+//         )}
+//         <input type="file" accept="image/*" onChange={handleImageChange} />
+//         <button
+//           type="submit"
+//           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+//         >
+//           Save Changes
+//         </button>
+//         <button
+//           type="button"
+//           onClick={onClose}
+//           className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+//         >
+//           Cancel
+//         </button>
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default EditPost;
 import React, { useState } from "react";
 
-const EditPostForm = ({ post, onSave, onCancel }) => {
-  const [content, setContent] = useState(post.content);
+const EditPostForm = ({ post, onSave, onClose }) => {
+  const [content, setContent] = useState(post.content || "");
   const [img, setImg] = useState(null);
-  const [imgPreview, setImgPreview] = useState(post.image || "");
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave({ ...post, content, img });
-  };
+  const [preview, setPreview] = useState(post.image || "");
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -16,64 +72,52 @@ const EditPostForm = ({ post, onSave, onCancel }) => {
       setImg(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImgPreview(reader.result);
+        setPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({ ...post, content, img });
+  };
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="p-4 bg-white border border-gray-300 rounded-lg"
-    >
-      <h2 className="text-xl font-semibold mb-4">Edit Post</h2>
-
-      {imgPreview && (
-        <div className="mb-4">
-          <img
-            src={imgPreview}
-            alt="Preview"
-            className="w-full h-40 object-cover rounded-lg mb-2"
-          />
-        </div>
-      )}
-
-      <label className="block mb-4">
-        Content:
+    <div className="p-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-2 py-1"
+          className="border border-gray-300 p-2 rounded-lg"
           rows="4"
-          required
+          placeholder="Edit post content..."
         />
-      </label>
-      <label className="block mb-4">
-        Image:
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-        />
-      </label>
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg mr-2"
-        >
-          Save
-        </button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="bg-gray-500 text-white px-4 py-2 rounded-lg"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
+        {preview && (
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-full h-auto object-cover rounded-lg"
+          />
+        )}
+        <input type="file" accept="image/*" onChange={handleImageChange} />
+        <div className="flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
