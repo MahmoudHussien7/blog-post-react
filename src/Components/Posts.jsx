@@ -39,7 +39,7 @@ const Posts = () => {
               storage,
               `profileImages/${postData.userId}`
             );
-            let userImageUrl; // Default image
+            let userImageUrl = "/path/to/placeholder-image.jpg";
             try {
               userImageUrl = await getDownloadURL(userImageRef);
             } catch (error) {
@@ -74,7 +74,7 @@ const Posts = () => {
                 return {
                   ...comment,
                   userImage: commentUserImageUrl,
-                  displayName: commentUserData?.displayName,
+                  displayName: commentUserData?.displayName || "Anonymous", // Default to 'Anonymous' if undefined
                 };
               })
             );
@@ -83,7 +83,7 @@ const Posts = () => {
               ...postData,
               id: postDoc.id,
               userImage: userImageUrl,
-              userDisplayName: userData.displayName,
+              userDisplayName: userData?.displayName || "Anonymous", // Default to 'Anonymous' if undefined
               comments: commentsWithUserImages,
             };
           })
@@ -218,8 +218,8 @@ const Posts = () => {
                 <div className="flex-none w-full sm:w-1/2 overflow-hidden rounded-lg">
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src={post?.image}
-                    alt={post?.title}
+                    src={post.image}
+                    alt={post.title}
                     onError={(e) => {
                       e.target.src = "/path/to/placeholder-image.jpg";
                       console.error("Image failed to load:", e.target.src);
