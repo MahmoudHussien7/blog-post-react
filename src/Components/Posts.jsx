@@ -39,36 +39,42 @@ const Posts = () => {
               storage,
               `profileImages/${postData.userId}`
             );
-            let userImageUrl = "/path/to/placeholder-image.jpg"; 
+            let userImageUrl; // Default image
             try {
               userImageUrl = await getDownloadURL(userImageRef);
             } catch (error) {
-              console.error("Error fetching user image:", error);
+              console.error(
+                `Error fetching user image for ${postData?.userId}:`,
+                error
+              );
             }
 
             const commentsWithUserImages = await Promise.all(
               (postData.comments || []).map(async (comment) => {
-                const commentUserRef = doc(db, "users", comment.userId);
+                const commentUserRef = doc(db, "users", comment?.userId);
                 const commentUserSnapshot = await getDoc(commentUserRef);
                 const commentUserData = commentUserSnapshot.data();
 
                 const commentUserImageRef = ref(
                   storage,
-                  `profileImages/${comment.userId}`
+                  `profileImages/${comment?.userId}`
                 );
-                let commentUserImageUrl = "/path/to/placeholder-image.jpg"; 
+                let commentUserImageUrl = "/path/to/placeholder-image.jpg"; // Default image
                 try {
                   commentUserImageUrl = await getDownloadURL(
                     commentUserImageRef
                   );
                 } catch (error) {
-                  console.error("Error fetching comment user image:", error);
+                  console.error(
+                    `Error fetching comment user image for ${comment?.userId}:`,
+                    error
+                  );
                 }
 
                 return {
                   ...comment,
                   userImage: commentUserImageUrl,
-                  displayName: commentUserData.displayName,
+                  displayName: commentUserData?.displayName,
                 };
               })
             );
@@ -122,7 +128,7 @@ const Posts = () => {
   };
 
   const handleAddComment = async (postId, commentText) => {
-    if (!commentText.trim()) return; 
+    if (!commentText.trim()) return; // Validate empty input
 
     const comment = {
       text: commentText,
@@ -228,6 +234,13 @@ const Posts = () => {
                       src={post?.userImage}
                       alt="ProfileImage"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "/path/to/placeholder-image.jpg";
+                        console.error(
+                          "Profile image failed to load:",
+                          e.target.src
+                        );
+                      }}
                     />
                   </div>
                   <div className="flex flex-col">
