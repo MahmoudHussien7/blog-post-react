@@ -96,7 +96,7 @@ const Posts = () => {
     };
 
     getPosts();
-  }, []);
+  }, [posts]);
 
   const handleLike = async (postId, isLiked) => {
     const postRef = doc(db, "Posts", postId);
@@ -218,8 +218,8 @@ const Posts = () => {
                 <div className="flex-none w-full sm:w-1/2 overflow-hidden rounded-lg">
                   <img
                     className="w-full h-auto object-cover rounded-lg"
-                    src={post.image}
-                    alt={post.title}
+                    src={post?.image}
+                    alt={post?.title}
                     onError={(e) => {
                       e.target.src = "/path/to/placeholder-image.jpg";
                       console.error("Image failed to load:", e.target.src);
@@ -287,21 +287,23 @@ const Posts = () => {
                     </div>
                   )}
                 </div>
-                <p className="mb-4 text-gray-800">{post.content}</p>
-                {post.comments && post.comments.length > 0 && (
+                <p className="mb-4 text-gray-800">{post?.content}</p>
+                {post?.comments && post.comments?.length > 0 && (
                   <div className="mb-4 max-h-40 overflow-y-auto">
-                    {post.comments.map((comment, index) => (
+                    {post.comments?.map((comment, index) => (
                       <div key={index} className="flex items-start gap-3 mb-2">
                         <div className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-full overflow-hidden">
                           <img
-                            src={comment.userImage}
+                            src={comment?.userImage}
                             alt="CommentUserImage"
                             className="w-full h-full object-cover"
                           />
                         </div>
                         <div className="flex-1">
-                          <p className="font-semibold">{comment.displayName}</p>
-                          <p className="text-gray-700">{comment.text}</p>
+                          <p className="font-semibold">
+                            {comment?.displayName}
+                          </p>
+                          <p className="text-gray-700">{comment?.text}</p>
                         </div>
                       </div>
                     ))}
@@ -309,7 +311,7 @@ const Posts = () => {
                 )}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
-                    onClick={() => handleLike(post.id, isLiked)}
+                    onClick={() => handleLike(post?.id, isLiked)}
                     className={`flex items-center gap-2 ${
                       isLiked ? "text-red-600" : "text-gray-600"
                     } hover:text-red-600 transition-colors`}

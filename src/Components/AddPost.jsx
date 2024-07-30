@@ -27,8 +27,8 @@ const AddPost = ({ onNewPost }) => {
       title: displayName,
       content: postText,
       date: new Date().toISOString(),
-      userId: currentUser.uid,
-      userImage: currentUser.photoURL,
+      userId: currentUser?.uid,
+      userImage: currentUser?.photoURL,
     };
 
     try {
