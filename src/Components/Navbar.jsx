@@ -54,91 +54,187 @@ function Navbar() {
   };
 
   return (
-    <div className="flex justify-between items-center bg-gradient-to-r from-[#4a2c77] to-[#7f4f9b] text-white shadow-lg p-4">
-      <Link to="/">
-        <img width={70} className="cursor-pointer" src={Logo} alt="Logo" />
-      </Link>
-      <div className="flex items-center gap-4">
-        <Link to="/" className="hover:text-yellow-300 transition-colors">
-          Home
+    <div className="bg-gradient-to-r from-[#4a2c77] to-[#7f4f9b] text-white shadow-lg p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/">
+          <img width={70} className="cursor-pointer" src={Logo} alt="Logo" />
         </Link>
-        <Link to="/AboutUs" className="hover:text-yellow-300 transition-colors">
-          About Us
-        </Link>
-        <div className="relative">
-          <button
-            onClick={() => setSearchVisible(!searchVisible)}
-            className="text-white text-2xl transition-transform transform hover:scale-110"
+        <div className="hidden md:flex items-center gap-4">
+          <Link to="/" className="hover:text-yellow-300 transition-colors">
+            Home
+          </Link>
+          <Link
+            to="/AboutUs"
+            className="hover:text-yellow-300 transition-colors"
           >
-            <MdSearch />
-          </button>
-          <form
-            onSubmit={handleSearch}
-            className={`absolute top-full right-0 mt-2 bg-white text-black p-4 rounded-lg shadow-lg transition-transform ${
-              searchVisible
-                ? "translate-y-0 opacity-100"
-                : "translate-y-[-200%] opacity-0"
-            } transition-all duration-300`}
-          >
-            <div className="flex items-center">
-              <input
-                className="outline-none border-none flex-grow"
-                type="text"
-                placeholder="Search For Posts and Profiles"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="text-blue-500 text-lg ml-2">
-                <MdSearch />
-              </button>
-              <button
-                type="button"
-                onClick={() => setSearchVisible(false)}
-                className="text-red-500 text-lg ml-2"
-              >
-                <IoCloseOutline />
-              </button>
-            </div>
-          </form>
-        </div>
-        {userLoggedIn ? (
+            About Us
+          </Link>
           <div className="relative">
             <button
-              onClick={toggleDropdown}
-              className="flex items-center text-white hover:text-yellow-300"
+              onClick={() => setSearchVisible(!searchVisible)}
+              className="text-white text-2xl transition-transform transform hover:scale-110"
             >
-              {currentUser?.displayName || "Profile"}
-              <FaChevronDown className="ml-2" />
+              <MdSearch />
             </button>
-            {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-lg border border-gray-300">
-                <Link
-                  to={`/profile/${currentUser.uid}`}
-                  className="block px-4 py-2 hover:bg-gray-100"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  Profile
-                </Link>
+            <form
+              onSubmit={handleSearch}
+              className={`absolute top-full right-0 mt-2 bg-white text-black p-4 rounded-lg shadow-lg transition-transform ${
+                searchVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-[-200%] opacity-0"
+              } transition-all duration-300`}
+            >
+              <div className="flex items-center">
+                <input
+                  className="outline-none border-none flex-grow"
+                  type="text"
+                  placeholder="Search For Posts and Profiles"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button type="submit" className="text-blue-500 text-lg ml-2">
+                  <MdSearch />
+                </button>
                 <button
-                  onClick={() => {
-                    doSignOut().then(() => {
-                      navigate("/");
-                      setDropdownOpen(false);
-                    });
-                  }}
-                  className="block w-full px-4 py-2 hover:bg-gray-100 text-left"
+                  type="button"
+                  onClick={() => setSearchVisible(false)}
+                  className="text-red-500 text-lg ml-2"
                 >
-                  Logout
+                  <IoCloseOutline />
                 </button>
               </div>
-            )}
+            </form>
           </div>
-        ) : (
-          <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:opacity-80 transition-opacity">
-            <Link to="/login">LOGIN/REGISTER</Link>
+          {userLoggedIn ? (
+            <div className="relative">
+              <button
+                onClick={toggleDropdown}
+                className="flex items-center text-white hover:text-yellow-300"
+              >
+                {currentUser?.displayName || "Profile"}
+                <FaChevronDown className="ml-2" />
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-lg border border-gray-300">
+                  <Link
+                    to={`/profile/${currentUser.uid}`}
+                    className="block px-4 py-2 hover:bg-gray-100"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      doSignOut().then(() => {
+                        navigate("/");
+                        setDropdownOpen(false);
+                      });
+                    }}
+                    className="block w-full px-4 py-2 hover:bg-gray-100 text-left"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:opacity-80 transition-opacity">
+              <Link to="/login">LOGIN/REGISTER</Link>
+            </button>
+          )}
+        </div>
+        <div className="md:hidden flex items-center">
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="text-white text-2xl"
+          >
+            ☰
           </button>
-        )}
+        </div>
       </div>
+      {dropdownOpen && (
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-gradient-to-r from-[#4a2c77] to-[#7f4f9b] text-white shadow-lg p-4 z-10">
+          <Link
+            to="/"
+            className="block py-2 hover:text-yellow-300 transition-colors"
+            onClick={() => setDropdownOpen(false)}
+          >
+            Home
+          </Link>
+          <Link
+            to="/AboutUs"
+            className="block py-2 hover:text-yellow-300 transition-colors"
+            onClick={() => setDropdownOpen(false)}
+          >
+            About Us
+          </Link>
+          <div className="relative">
+            <button
+              onClick={() => setSearchVisible(!searchVisible)}
+              className="text-white text-2xl transition-transform transform hover:scale-110"
+            >
+              <MdSearch />
+            </button>
+            <form
+              onSubmit={handleSearch}
+              className={`absolute top-full right-0 mt-2 bg-white text-black p-4 rounded-lg shadow-lg transition-transform ${
+                searchVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-[-200%] opacity-0"
+              } transition-all duration-300`}
+            >
+              <div className="flex items-center">
+                <input
+                  className="outline-none border-none flex-grow"
+                  type="text"
+                  placeholder="Search For Posts and Profiles"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button type="submit" className="text-blue-500 text-lg ml-2">
+                  <MdSearch />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSearchVisible(false)}
+                  className="text-red-500 text-lg ml-2"
+                >
+                  <IoCloseOutline />
+                </button>
+              </div>
+            </form>
+          </div>
+          {userLoggedIn ? (
+            <>
+              <Link
+                to={`/profile/${currentUser.uid}`}
+                className="block py-2 hover:text-yellow-300 transition-colors"
+                onClick={() => setDropdownOpen(false)}
+              >
+                Profile
+              </Link>
+              <button
+                onClick={() => {
+                  doSignOut().then(() => {
+                    navigate("/");
+                    setDropdownOpen(false);
+                  });
+                }}
+                className="block w-full py-2 hover:text-yellow-300 text-left transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setDropdownOpen(false)}
+              className="block w-full py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full shadow-lg hover:opacity-80 transition-opacity"
+            >
+              <Link to="/login">LOGIN/REGISTER</Link>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

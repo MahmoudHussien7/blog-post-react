@@ -205,7 +205,7 @@ const Posts = () => {
         return (
           <div
             key={post.id}
-            className="bg-white shadow-lg rounded-lg p-4 mb-6 hover:shadow-xl transition-shadow relative border border-gray-200"
+            className="bg-white shadow-lg rounded-lg p-3 mb-6 hover:shadow-xl transition-shadow relative border border-gray-200"
           >
             <div className="flex flex-col sm:flex-row">
               {post.image && (
