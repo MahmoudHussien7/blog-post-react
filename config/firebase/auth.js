@@ -73,7 +73,7 @@ export const doSignInWithGoogle = async () => {
     await setDoc(doc(db, "users", user.uid), {
       email: user.email,
       displayName: user.displayName,
-      photoURL: user.photoURL,
+      // photoURL: user.photoURL,
     });
   }
 };
