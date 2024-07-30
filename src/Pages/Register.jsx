@@ -19,7 +19,6 @@ const Register = () => {
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       const user = res.user;
-
       if (img) {
         const storageRef = ref(storage, `profileImages/${user.uid}`);
         const uploadTask = uploadBytesResumable(storageRef, img);
@@ -42,7 +41,8 @@ const Register = () => {
               photoURL: downloadURL,
             });
 
-            navigate(`{/profile/${user.uid}}`);
+            console.log(`Navigating to: /profile/${user.uid}`);
+            navigate(`/profile/${user.uid}`);
           }
         );
       } else {
@@ -54,7 +54,8 @@ const Register = () => {
           photoURL: null,
         });
 
-        navigate("/profile");
+        const userId = encodeURIComponent(user.uid);
+        navigate(`/profile/${userId}`);
       }
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
