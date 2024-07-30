@@ -21,7 +21,6 @@ export default function Home() {
   };
 
   useEffect(() => {
-    // Simulate fetching posts
     setTimeout(() => {
       setPosts([
         // Sample posts

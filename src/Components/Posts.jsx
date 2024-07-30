@@ -39,7 +39,7 @@ const Posts = () => {
               storage,
               `profileImages/${postData.userId}`
             );
-            let userImageUrl = "/path/to/placeholder-image.jpg"; // Default image
+            let userImageUrl = "/path/to/placeholder-image.jpg"; 
             try {
               userImageUrl = await getDownloadURL(userImageRef);
             } catch (error) {
@@ -56,7 +56,7 @@ const Posts = () => {
                   storage,
                   `profileImages/${comment.userId}`
                 );
-                let commentUserImageUrl = "/path/to/placeholder-image.jpg"; // Default image
+                let commentUserImageUrl = "/path/to/placeholder-image.jpg"; 
                 try {
                   commentUserImageUrl = await getDownloadURL(
                     commentUserImageRef
@@ -122,7 +122,7 @@ const Posts = () => {
   };
 
   const handleAddComment = async (postId, commentText) => {
-    if (!commentText.trim()) return; // Validate empty input
+    if (!commentText.trim()) return; 
 
     const comment = {
       text: commentText,
@@ -207,7 +207,7 @@ const Posts = () => {
             key={post.id}
             className="bg-white shadow-lg rounded-lg p-3 mb-6 hover:shadow-xl transition-shadow relative border border-gray-200"
           >
-            <div className="flex flex-col sm:flex-row">
+            <div className="flex flex-col sm:flex-col">
               {post.image && (
                 <div className="flex-none w-full sm:w-1/2 overflow-hidden rounded-lg">
                   <img
@@ -276,7 +276,7 @@ const Posts = () => {
                 </div>
                 <p className="mb-4 text-gray-800">{post.content}</p>
                 {post.comments && post.comments.length > 0 && (
-                  <div className="mb-4">
+                  <div className="mb-4 max-h-40 overflow-y-auto">
                     {post.comments.map((comment, index) => (
                       <div key={index} className="flex items-start gap-3 mb-2">
                         <div className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-full overflow-hidden">

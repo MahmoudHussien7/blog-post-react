@@ -22,17 +22,30 @@ Modal.setAppElement("#root");
 
 const Profile = () => {
   const { currentUser } = useAuth();
+  const { userId } = useParams();
+  const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [userImage, setUserImage] = useState(null); // Use null for initial state to avoid unnecessary rendering
+  const [userImage, setUserImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  // Use useCallback for memoized data fetching functions
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      const userRef = doc(db, "users", userId);
+      const userSnapshot = await getDoc(userRef);
+      if (userSnapshot.exists()) {
+        setUser(userSnapshot.data());
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }, [userId]);
+
   const fetchUserPosts = useCallback(async () => {
     try {
       const postsQuery = query(
         collection(db, "Posts"),
-        where("title", "==", currentUser?.displayName)
+        where("userId", "==", userId)
       );
       const postsSnapshot = await getDocs(postsQuery);
       const userPosts = postsSnapshot.docs.map((doc) => ({
@@ -43,23 +56,23 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching user posts:", error);
     }
-  }, [currentUser?.displayName, db]);
+  }, [userId]);
 
   const fetchUserImage = useCallback(async () => {
     try {
-      const imageRef = ref(storage, `profileImages/${currentUser?.uid}`);
+      const imageRef = ref(storage, `profileImages/${userId}`);
       const url = await getDownloadURL(imageRef);
       setUserImage(url);
     } catch (error) {
       console.error("Error fetching user image:", error);
     }
-  }, [currentUser?.uid, storage]);
+  }, [userId]);
 
-  // Fetch data on component mount and whenever currentUser changes
   useEffect(() => {
+    fetchUserProfile();
     fetchUserPosts();
     fetchUserImage();
-  }, [fetchUserPosts, fetchUserImage, currentUser]);
+  }, [fetchUserProfile, fetchUserPosts, fetchUserImage, userId]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -73,7 +86,6 @@ const Profile = () => {
       const url = await getDownloadURL(imageRef);
       setUserImage(url);
 
-      // Update the user's profile image URL in Firestore if needed
       await updateDoc(doc(db, "users", currentUser.uid), {
         photoURL: url,
       });
@@ -106,6 +118,10 @@ const Profile = () => {
     setSelectedPost(null);
   };
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
@@ -118,12 +134,14 @@ const Profile = () => {
                 src={userImage}
                 alt="Profile"
               />
-              <input
-                type="file"
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                onChange={handleImageUpload}
-                disabled={uploading}
-              />
+              {currentUser.uid === userId && (
+                <input
+                  type="file"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={handleImageUpload}
+                  disabled={uploading}
+                />
+              )}
               {uploading && (
                 <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center">
                   Uploading...
@@ -132,9 +150,9 @@ const Profile = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-800">
-                {currentUser?.displayName}
+                {user.displayName}
               </h1>
-              <p className="text-lg text-gray-600">{currentUser?.email}</p>
+              <p className="text-lg text-gray-600">{user.email}</p>
             </div>
           </div>
           <h2 className="text-2xl font-semibold text-gray-800 mb-4">
