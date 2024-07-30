@@ -22,7 +22,6 @@ export const doCreateUserWithEmailAndPassword = async (
     const displayName = firstName + " " + lastName; // Create a display name
     await updateProfile(res.user, { displayName });
 
-    // Handle image upload if provided
     if (img) {
       const storageRef = ref(storage, `usersImages/${res.user.uid}`);
       const uploadTask = uploadBytesResumable(storageRef, img);
@@ -69,7 +68,14 @@ export const doSignInWithGoogle = async () => {
   const result = await signInWithPopup(auth, provider);
   const user = result.user;
 
-  // add user to firestore
+  const userDoc = await getDoc(doc(db, "users", user.uid));
+  if (!userDoc.exists()) {
+    await setDoc(doc(db, "users", user.uid), {
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+    });
+  }
 };
 
 export const doSignOut = () => {
