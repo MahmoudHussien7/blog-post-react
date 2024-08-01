@@ -288,7 +288,7 @@ const Profile = () => {
                         onClick={() => openModal(post)}
                         className="mt-2 text-cyan-500 hover:text-cyan-700"
                       >
-                        View Comments
+                        View Post
                       </button>
                     </div>
                   </div>
