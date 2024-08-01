@@ -110,17 +110,18 @@ const Posts = React.memo(() => {
   const handleEdit = async (postId, newContent, newImage) => {
     const postRef = doc(db, "Posts", postId);
     try {
-      let newImageUrl = "";
+      let newImageUrl;
 
       if (newImage) {
         const imageRef = ref(storage, `postImages/${postId}/${newImage.name}`);
         await uploadBytes(imageRef, newImage);
         newImageUrl = await getDownloadURL(imageRef);
       }
+      const currentPost = posts.find((post) => post.id === postId);
 
       const updatedPost = {
         content: newContent,
-        image: newImageUrl || newContent.image || "",
+        image: newImageUrl || currentPost?.image,
         edited: true,
       };
 
@@ -138,6 +139,37 @@ const Posts = React.memo(() => {
       // Implement user feedback or logging as necessary
     }
   };
+  //Gpt================================================================================
+  // const handleEdit = async (postId, newContent, newImage) => {
+  //   const postRef = doc(db, "Posts", postId);
+  //   try {
+  //     let newImageUrl = "";
+
+  //     if (newImage) {
+  //       const imageRef = ref(storage, `postImages/${postId}/${newImage.name}`);
+  //       await uploadBytes(imageRef, newImage);
+  //       newImageUrl = await getDownloadURL(imageRef);
+  //     }
+
+  //     const updatedPost = {
+  //       content: newContent,
+  //       image: newImageUrl || photoURL || "",
+  //       edited: true,
+  //     };
+
+  //     await updateDoc(postRef, updatedPost);
+
+  //     setPosts((prevPosts) =>
+  //       prevPosts.map((post) =>
+  //         post.id === postId
+  //           ? { ...post, content: newContent, image: newImageUrl || post.image }
+  //           : post
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.error("Error editing post:", error);
+  //   }
+  // };
 
   const handleDelete = async (postId) => {
     const postRef = doc(db, "Posts", postId);
