@@ -49,7 +49,7 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
-  }, [userId]);
+  }, []);
 
   const fetchUserPosts = useCallback(async () => {
     try {
@@ -76,7 +76,7 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching user image:", error);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     if (!currentUser) {
@@ -225,7 +225,7 @@ const Profile = () => {
                 src={userImage}
                 alt="Profile"
               />
-              {currentUser.uid === userId && (
+              {currentUser?.uid === userId && (
                 <input
                   type="file"
                   className="absolute inset-0 opacity-0 cursor-pointer"

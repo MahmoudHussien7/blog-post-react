@@ -1,12 +1,7 @@
 // src/pages/Login.jsx
 import React, { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import Navbar from "../Components/Navbar";
-import Logo from "./../assets/Images/Logo.png";
-import {
-  doSignInWithEmailAndPassword,
-  doSignInWithGoogle,
-} from "../../config/firebase/auth";
+import { doSignInWithEmailAndPassword } from "../config/firebase.config";
 import { useAuth } from "../Contexts/authContext";
 
 export default function Login() {

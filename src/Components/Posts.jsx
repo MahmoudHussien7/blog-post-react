@@ -25,78 +25,30 @@ const Posts = React.memo(() => {
   const postsListRef = collection(db, "Posts");
 
   useEffect(() => {
-    const getPosts = async () => {
-      try {
-        const postsSnapshot = await getDocs(postsListRef);
-        const postsWithUserImages = await Promise.all(
-          postsSnapshot.docs.map(async (postDoc) => {
-            const postData = postDoc.data();
-            const userRef = doc(db, "users", postData.userId);
-            const userSnapshot = await getDoc(userRef);
-            const userData = userSnapshot.data();
+    fetchPosts();
+    console.log("USeEFECCT!@#");
+  }, []);
 
-            const userImageRef = ref(
-              storage,
-              `profileImages/${postData.userId}`
-            );
-            let userImageUrl; // Default image
-            try {
-              userImageUrl = await getDownloadURL(userImageRef);
-            } catch (error) {
-              console.error(
-                `Error fetching user image for ${postData?.userId}:`,
-                error
-              );
-            }
+  const fetchPosts = useCallback(async () => {
+    try {
+      const postsSnapshot = await getDocs(postsListRef);
+      const postsData = postsSnapshot.docs.map((postDoc) => ({
+        ...postDoc.data(),
+        id: postDoc.id,
+      }));
+      setPosts(postsData);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  }, [postsListRef]);
 
-            const commentsWithUserImages = await Promise.all(
-              (postData.comments || []).map(async (comment) => {
-                const commentUserRef = doc(db, "users", comment?.userId);
-                const commentUserSnapshot = await getDoc(commentUserRef);
-                const commentUserData = commentUserSnapshot.data();
-
-                const commentUserImageRef = ref(
-                  storage,
-                  `profileImages/${comment?.userId}`
-                );
-                let commentUserImageUrl = "/path/to/placeholder-image.jpg"; // Default image
-                try {
-                  commentUserImageUrl = await getDownloadURL(
-                    commentUserImageRef
-                  );
-                } catch (error) {
-                  console.error(
-                    `Error fetching comment user image for ${comment?.userId}:`,
-                    error
-                  );
-                }
-
-                return {
-                  ...comment,
-                  userImage: commentUserImageUrl,
-                  displayName: commentUserData?.displayName,
-                };
-              })
-            );
-
-            return {
-              ...postData,
-              id: postDoc.id,
-              userImage: userImageUrl,
-              userDisplayName: userData.displayName,
-              comments: commentsWithUserImages,
-            };
-          })
-        );
-        postsWithUserImages.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setPosts(postsWithUserImages);
-      } catch (error) {
-        console.log("Error fetching posts:", error);
-      }
-    };
-
-    getPosts();
-  }, [posts]);
+  console.log("aaaaa");
+  const toggleDropdown = (postId) => {
+    setDropdownOpen((prevState) => ({
+      ...prevState,
+      [postId]: !prevState[postId],
+    }));
+  };
 
   const handleLike = async (postId, isLiked) => {
     const postRef = doc(db, "Posts", postId);
@@ -218,13 +170,12 @@ const Posts = React.memo(() => {
               <div className="flex items-center">
                 <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center bg-gray-300 rounded-full overflow-hidden">
                   <img
-                    className="w-full h-auto object-cover rounded-lg"
-                    src={post?.image}
-                    alt={post?.title}
-                    onError={(e) => {
-                      e.target.src = "/path/to/placeholder-image.jpg";
-                      console.error("Image failed to load:", e.target.src);
-                    }}
+                    src={
+                      post.userImage ||
+                      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                    }
+                    alt="ProfileImage"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="ml-4">

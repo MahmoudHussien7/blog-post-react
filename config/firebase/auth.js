@@ -2,11 +2,8 @@ import { auth } from "../../src/config/firebase.config";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-  updatePassword,
-  signInWithPopup,
-  GoogleAuthProvider,
+  signOut,
+  updateProfile,
 } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import { db, storage } from "../../src/config/firebase.config";
@@ -61,39 +58,12 @@ export const logIn = async (email, password) => {
     throw error;
   }
 };
-export const doSignInWithEmailAndPassword = (email, password) => {
-  return signInWithEmailAndPassword(auth, email, password);
-};
 
-export const doSignInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  const result = await signInWithPopup(auth, provider);
-  const user = result.user;
-
-  const userDoc = await getDoc(doc(db, "users", user.uid));
-  if (!userDoc.exists()) {
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      displayName: user.displayName,
-      // photoURL: user.photoURL,
-    });
+export const logOut = async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("Error logging out:", error.message);
+    throw error;
   }
-};
-
-export const doSignOut = () => {
-  return auth.signOut();
-};
-
-export const doPasswordReset = (email) => {
-  return sendPasswordResetEmail(auth, email);
-};
-
-export const doPasswordChange = (password) => {
-  return updatePassword(auth.currentUser, password);
-};
-
-export const doSendEmailVerification = () => {
-  return sendEmailVerification(auth.currentUser, {
-    url: `${window.location.origin}/home`,
-  });
 };
