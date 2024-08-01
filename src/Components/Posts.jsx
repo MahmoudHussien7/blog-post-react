@@ -73,22 +73,11 @@ const Posts = React.memo(() => {
           likes: arrayUnion(currentUser.uid),
         });
       }
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId
-            ? {
-                ...post,
-                likes: isLiked
-                  ? post.likes.filter((uid) => uid !== currentUser.uid)
-                  : [...post.likes, currentUser.uid],
-              }
-            : post
-        )
-      );
     } catch (error) {
       console.error("Error handling like:", error);
     }
   };
+
   const handleAddComment = async (postId, commentText) => {
     if (!commentText.trim()) return;
 
@@ -108,13 +97,6 @@ const Posts = React.memo(() => {
         comments: arrayUnion(comment),
       });
 
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post.id === postId
-            ? { ...post, comments: [...(post.comments || []), comment] }
-            : post
-        )
-      );
       setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
     } catch (error) {
       console.error("Error adding comment:", error);
