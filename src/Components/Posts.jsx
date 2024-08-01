@@ -89,7 +89,6 @@ const Posts = React.memo(() => {
       console.error("Error handling like:", error);
     }
   };
-
   const handleAddComment = async (postId, commentText) => {
     if (!commentText.trim()) return;
 
@@ -129,30 +128,32 @@ const Posts = React.memo(() => {
   const handleEdit = async (postId, newContent, newImage) => {
     const postRef = doc(db, "Posts", postId);
     try {
-      const updatedPost = { content: newContent, edited: true };
+      let newImageUrl = "";
 
       if (newImage) {
         const imageRef = ref(storage, `postImages/${postId}/${newImage.name}`);
         await uploadBytes(imageRef, newImage);
-        const newImageUrl = await getDownloadURL(imageRef);
-        updatedPost.image = newImageUrl;
+        newImageUrl = await getDownloadURL(imageRef);
       }
+
+      const updatedPost = {
+        content: newContent,
+        image: newImageUrl || newContent.image || "",
+        edited: true,
+      };
 
       await updateDoc(postRef, updatedPost);
 
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
           post.id === postId
-            ? {
-                ...post,
-                content: newContent,
-                image: updatedPost.image || post.image,
-              }
+            ? { ...post, content: newContent, image: newImageUrl || post.image }
             : post
         )
       );
     } catch (error) {
       console.error("Error editing post:", error);
+      // Implement user feedback or logging as necessary
     }
   };
 

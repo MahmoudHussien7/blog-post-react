@@ -1,4 +1,3 @@
-// src/Components/EditPostForm.jsx
 import React, { useState } from "react";
 
 const EditPostForm = ({ post, onSave, onClose }) => {
