@@ -15,8 +15,9 @@ const Sidebar = () => {
     };
 
     fetchUsers();
+    console.log("from useEffect");
   }, []);
-
+  console.log("alo");
   return (
     <div className="w-64 bg-white p-4 shadow-lg h-screen sticky top-0">
       <h2 className="text-2xl font-semibold mb-4">Our Users</h2>

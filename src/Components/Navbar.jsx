@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import Logo from "./../assets/Images/Logo.png";
 import { MdSearch } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
-import { doSignOut } from "../../config/firebase/auth";
-import { useAuth } from "../Contexts/authContext";
+import { logOut } from "../../config/firebase/auth";
+import { useAuth } from "../Contexts/authContext/index";
 import { FaChevronDown } from "react-icons/fa";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../config/firebase.config";
@@ -50,6 +50,16 @@ function Navbar() {
       navigate(`/search?query=${searchQuery}`, { state: { posts, profiles } });
     } catch (error) {
       console.error("Error searching:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      navigate("/login");
+      setDropdownOpen(false);
+    } catch (error) {
+      console.error("Error logging out:", error);
     }
   };
 
@@ -124,12 +134,7 @@ function Navbar() {
                     Profile
                   </Link>
                   <button
-                    onClick={() => {
-                      doSignOut().then(() => {
-                        navigate("/");
-                        setDropdownOpen(false);
-                      });
-                    }}
+                    onClick={handleLogout}
                     className="block w-full px-4 py-2 hover:bg-gray-100 text-left"
                   >
                     Logout
@@ -214,12 +219,7 @@ function Navbar() {
                 Profile
               </Link>
               <button
-                onClick={() => {
-                  doSignOut().then(() => {
-                    navigate("/");
-                    setDropdownOpen(false);
-                  });
-                }}
+                onClick={handleLogout}
                 className="block w-full py-2 hover:text-yellow-300 text-left transition-colors"
               >
                 Logout

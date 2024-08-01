@@ -1,3 +1,4 @@
+// src/pages/Home.jsx
 import React, { useEffect, useState } from "react";
 import Navbar from "../Components/Navbar";
 import Posts from "../Components/Posts";
@@ -23,7 +24,6 @@ export default function Home() {
   useEffect(() => {
     setTimeout(() => {
       setPosts([
-        // Sample posts
         { id: 1, title: "Post 1", content: "Content 1" },
         { id: 2, title: "Post 2", content: "Content 2" },
       ]);
@@ -37,13 +37,9 @@ export default function Home() {
       {userLoggedIn ? (
         <div className="flex flex-col lg:flex-row flex-grow">
           <div className="hidden lg:block lg:w-1/4 bg-gray-200">
-            <Sidebar /> {/* Hide on mobile, show on large screens */}
+            <Sidebar />
           </div>
-          <div
-            className={`flex-grow p-6 lg:p-8 bg-white shadow-md rounded-lg m-4 lg:ml-16 mr-10 ${
-              userLoggedIn ? "lg:ml-0" : ""
-            }`}
-          >
+          <div className="flex-grow p-6 lg:p-8 bg-white shadow-md rounded-lg m-4 lg:ml-16 mr-10">
             {loading ? <Skeleton /> : <Posts posts={posts} />}
             <button
               onClick={toggleAddPost}
@@ -71,11 +67,11 @@ export default function Home() {
           <img
             className="mask mask-heart mb-14"
             src="https://img.daisyui.com/images/stock/photo-1567653418876-5bb0e566e1c2.webp"
+            alt="Heart Shape"
           />
           <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
             Join Our Community
           </h1>
-
           <Link
             to="/login"
             className="bg-white text-blue-500 px-6 py-3 rounded-full shadow-lg text-lg font-semibold transition-transform transform hover:scale-105 hover:bg-gray-100"

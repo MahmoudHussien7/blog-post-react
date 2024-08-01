@@ -1,134 +1,104 @@
-// AddPost.jsx
+// src/Components/AddPost.jsx
 import React, { useState } from "react";
-import { db, storage } from "../config/firebase.config";
-import { collection, addDoc } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { storage, db } from "../config/firebase.config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { addDoc, collection } from "firebase/firestore";
 import { useAuth } from "../Contexts/authContext";
-import { Link } from "react-router-dom";
 
 const AddPost = ({ onNewPost }) => {
-  const { userLoggedIn, currentUser } = useAuth();
-  const [postText, setPostText] = useState("");
+  const [content, setContent] = useState("");
   const [image, setImage] = useState(null);
-  const [isAddingPost, setIsAddingPost] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const { currentUser } = useAuth();
 
-  const displayName = currentUser?.displayName || "Anonymous";
-
-  const handleTextChange = (e) => setPostText(e.target.value);
-  const handleImageChange = (e) => setImage(e.target.files[0]);
+  const handleImageChange = (e) => {
+    if (e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isAddingPost) return;
+    if (!currentUser) return;
+    if (content) {
+      let imageURL = "";
 
-    setIsAddingPost(true);
-    const postData = {
-      title: displayName,
-      content: postText,
-      date: new Date().toISOString(),
-      userId: currentUser?.uid,
-      userImage: currentUser?.photoURL,
-    };
-
-    try {
-      let imageUrl = "";
       if (image) {
+        // Upload image to Firebase Storage
         const imageRef = ref(storage, `postImages/${Date.now()}_${image.name}`);
-        const uploadTask = uploadBytesResumable(imageRef, image);
-
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            "state_changed",
-            null,
-            (error) => {
-              console.error("Image upload error:", error);
-              setErrorMessage("Failed to upload image.");
-              reject(error);
-            },
-            () => {
-              getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-                imageUrl = url;
-                resolve();
-              });
-            }
-          );
-        });
+        try {
+          await uploadBytes(imageRef, image);
+          imageURL = await getDownloadURL(imageRef);
+        } catch (error) {
+          console.error("Error uploading image:", error);
+        }
       }
 
-      const newPost = { ...postData, image: imageUrl };
-      await addDoc(collection(db, "Posts"), newPost);
+      // Create a new post
+      const newPost = {
+        title: currentUser.displayName || "Anonymous",
+        content,
+        image: imageURL,
+        userId: currentUser.uid,
+        userDisplayName: currentUser.displayName,
+        userImage: currentUser.photoURL || "",
+        date: new Date().toISOString(),
+        likes: [],
+        comments: [],
+      };
 
-      onNewPost({ ...newPost });
-      setPostText("");
-      setImage(null);
-      setErrorMessage("");
-    } catch (error) {
-      console.error("Error adding new post:", error);
-      setErrorMessage("Failed to add post.");
-    } finally {
-      setIsAddingPost(false);
+      // Add post to Firestore
+      try {
+        const docRef = await addDoc(collection(db, "Posts"), newPost);
+        onNewPost({ ...newPost, id: docRef.id });
+        setContent("");
+        setImage(null);
+      } catch (error) {
+        console.error("Error adding post:", error);
+      }
     }
   };
 
   return (
-    <>
-      {userLoggedIn ? (
-        <div className="max-w-md mx-auto bg-white p-5 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold mb-4">Add New Post</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label
-                htmlFor="postText"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Post Text
-              </label>
-              <textarea
-                id="postText"
-                rows="4"
-                value={postText}
-                onChange={handleTextChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                placeholder="What's on your mind?"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="image"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Image
-              </label>
-              <input
-                id="image"
-                type="file"
-                onChange={handleImageChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={isAddingPost}
-              className="w-full py-2 px-4 bg-cyan-400 text-white font-semibold rounded-md shadow-md hover:bg-cyan-600 transition duration-200"
-            >
-              {isAddingPost ? "Adding..." : "Post"}
-            </button>
-          </form>
-          {errorMessage && (
-            <div className="text-red-500 mt-4">{errorMessage}</div>
-          )}
-        </div>
-      ) : (
-        <div className="flex items-center justify-center flex-col">
-          <h1>You're Not Logged in..</h1>
-          <Link to="/Login" className="text-cyan-600 focus:ring-cyan-500">
-            Login Now!
-          </Link>
-        </div>
-      )}
-    </>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <label
+          htmlFor="content"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Content
+        </label>
+        <textarea
+          id="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor="image"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Image
+        </label>
+        <input
+          type="file"
+          id="image"
+          onChange={handleImageChange}
+          accept="image/*"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="w-full py-2 text-white bg-cyan-400 rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-colors duration-200"
+      >
+        Add Post
+      </button>
+    </form>
   );
 };
 

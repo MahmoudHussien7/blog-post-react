@@ -1,7 +1,10 @@
+// src/pages/Profile.jsx
+
 import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../Components/Navbar";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../Contexts/authContext";
+import { useNavigate } from "react-router-dom";
 import {
   doc,
   getDoc,
@@ -12,22 +15,29 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  deleteDoc,
 } from "firebase/firestore";
 import { db, storage } from "../config/firebase.config";
-import { FaUser, FaRegHeart, FaHeart } from "react-icons/fa";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { FaRegHeart, FaHeart } from "react-icons/fa";
+import {
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  deleteObject,
+} from "firebase/storage";
 import Modal from "react-modal";
 
 Modal.setAppElement("#root");
 
 const Profile = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [userImage, setUserImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
+  const navigate = useNavigate();
 
   const fetchUserProfile = useCallback(async () => {
     try {
@@ -60,7 +70,7 @@ const Profile = () => {
 
   const fetchUserImage = useCallback(async () => {
     try {
-      const imageRef = ref(storage, `profileImages/${userId}`);
+      const imageRef = ref(storage, `avatars/${userId}`);
       const url = await getDownloadURL(imageRef);
       setUserImage(url);
     } catch (error) {
@@ -69,26 +79,107 @@ const Profile = () => {
   }, [userId]);
 
   useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+    }
     fetchUserProfile();
     fetchUserPosts();
     fetchUserImage();
-  }, [fetchUserProfile, fetchUserPosts, fetchUserImage, userId]);
+  }, [
+    fetchUserProfile,
+    fetchUserPosts,
+    fetchUserImage,
+    userId,
+    currentUser,
+    navigate,
+  ]);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
+
+  const updateUserImageInPostsAndComments = async (newImageUrl) => {
+    try {
+      // Fetch all posts from the database
+      const postsSnapshot = await getDocs(collection(db, "Posts"));
+      postsSnapshot.forEach(async (postDoc) => {
+        const postData = postDoc.data();
+        console.log("hassan hendawy: ", postData);
+        let updateRequired = false;
+
+        // Update user image in the post if the post author matches
+        if (postData.userId === currentUser.uid) {
+          updateRequired = true;
+          postData.userImage = newImageUrl;
+        }
+
+        // Update user image in the comments if the commenter matches
+        if (postData.comments) {
+          postData.comments = postData.comments.map((comment) => {
+            if (comment.userId === currentUser.uid) {
+              updateRequired = true;
+              return { ...comment, userImage: newImageUrl };
+            }
+            return comment;
+          });
+        }
+
+        // If any update is required, update the post document
+        if (updateRequired) {
+          await updateDoc(doc(db, "Posts", postDoc.id), {
+            ...postData,
+            userImage: postData.userImage, // Ensure we do not change post image
+            comments: postData.comments,
+          });
+        }
+      });
+    } catch (error) {
+      console.error(
+        "Error updating posts and comments with new image URL:",
+        error
+      );
+    }
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploading(true);
-    const imageRef = ref(storage, `profileImages/${currentUser.uid}`);
+    const imageRef = ref(storage, `avatars/${currentUser.uid}`);
 
     try {
+      // Fetch the user's current photoURL from Firestore
+      const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+      if (userDoc.exists()) {
+        const oldImageUrl = userDoc.data().photoURL;
+
+        // If there is an old image, delete it from storage
+        if (oldImageUrl) {
+          const oldImageRef = ref(storage, oldImageUrl);
+          await deleteObject(oldImageRef).catch((error) => {
+            console.warn("Error deleting old image: ", error);
+          });
+        }
+      }
+
+      // Upload the new image
       await uploadBytes(imageRef, file);
       const url = await getDownloadURL(imageRef);
       setUserImage(url);
 
+      // Update the user's photoURL in Firestore
       await updateDoc(doc(db, "users", currentUser.uid), {
         photoURL: url,
       });
+
+      // Update the user's image in posts and comments
+      await updateUserImageInPostsAndComments(url);
 
       setUploading(false);
     } catch (error) {
@@ -215,17 +306,17 @@ const Profile = () => {
           isOpen={true}
           onRequestClose={closeModal}
           contentLabel="Post Details"
-          className="flex items-center justify-center "
+          className="flex items-center justify-center"
           overlayClassName="fixed inset-0 bg-black bg-opacity-50"
         >
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
             <h2 className="text-2xl font-semibold text-gray-800">
               {selectedPost.title}
             </h2>
-            <p className="text-gray-600 h-auto mt-2">{selectedPost.content}</p>
+            <p className="text-gray-600 mt-2">{selectedPost.content}</p>
             {selectedPost.image && (
               <img
-                className="w-full h-96 object-contain mt-4  "
+                className="w-full h-60 md:h-80 lg:h-96 object-contain mt-4"
                 src={selectedPost.image}
                 alt={selectedPost.title}
               />
@@ -233,26 +324,34 @@ const Profile = () => {
             <div className="mt-4">
               <h3 className="text-xl font-semibold text-gray-800">Comments</h3>
               {selectedPost.comments?.length > 0 ? (
-                selectedPost.comments.map((comment, index) => (
-                  <div key={index} className="flex items-start gap-2 mt-4">
-                    <div className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-full overflow-hidden">
-                      <img
-                        src={comment.userImage}
-                        alt="UserImage"
-                        className="w-full h-full object-cover"
-                      />
+                <div className="max-h-60 overflow-y-auto">
+                  {selectedPost.comments.map((comment, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-2 mt-4 max-w-md"
+                    >
+                      <div className="w-8 h-8 flex items-center justify-center bg-gray-300 rounded-full overflow-hidden">
+                        <img
+                          src={
+                            comment.userImage ||
+                            "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png"
+                          }
+                          alt="UserImage"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {comment.displayName}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(comment.date).toLocaleString()}
+                        </span>
+                        <p className="text-gray-700">{comment.text}</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {comment.displayName}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(comment.date).toLocaleString()}
-                      </span>
-                      <p className="text-gray-700">{comment.text}</p>
-                    </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
                 <p className="text-gray-600">No comments yet.</p>
               )}
